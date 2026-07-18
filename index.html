@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expert Bot - EUR/USD</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:linear-gradient(180deg,#0f172a 0%,#1e1b4b 100%);min-height:100vh;color:#e2e8f0;padding:16px}
+.container{max-width:480px;margin:0 auto}
+.header{background:linear-gradient(135deg,#1e3a5f 0%,#0f172a 100%);padding:20px;border-radius:16px;text-align:center;border-bottom:2px solid #3b82f6;margin-bottom:16px}
+.header h1{font-size:20px;font-weight:800}
+.header p{font-size:11px;color:#94a3b8;margin-top:4px}
+.price-card{background:rgba(15,23,42,0.8);padding:20px;border-radius:16px;text-align:center;border:1px solid #334155;margin-bottom:16px}
+.price{font-size:42px;font-weight:900;color:#f8fafc}
+.signal-box{margin:0 0 16px;padding:24px;border-radius:16px;text-align:center}
+.signal-box.wait{background:linear-gradient(135deg,#713f12 0%,#854d0e 100%);border:2px solid #eab308}
+.signal-box.buy{background:linear-gradient(135deg,#064e3b 0%,#065f46 100%);border:2px solid #22c55e}
+.signal-box.sell{background:linear-gradient(135deg,#7f1d1d 0%,#991b1b 100%);border:2px solid #ef4444}
+.signal-text{font-size:40px;font-weight:900;margin:10px 0}
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.btn{padding:16px;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:800;cursor:pointer;-webkit-appearance:none}
+.btn-buy{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.btn-sell{background:linear-gradient(135deg,#dc2626,#ef4444)}
+.refresh-btn{width:100%;padding:14px;border:1px solid #475569;border-radius:24px;background:#1e293b;color:#94a3b8;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:16px;-webkit-appearance:none}
+.ind-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.ind-card{background:#1e293b;padding:12px;border-radius:10px;border:1px solid #334155;font-size:12px}
+.footer{text-align:center;padding:14px;font-size:10px;color:#475569}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header"><h1>🤖 EXPERT BOT</h1><p>Twelve Data API</p></div>
+<div class="price-card"><div class="price" id="price">--</div><div style="color:#94a3b8;font-size:13px;margin-top:6px">EUR/USD • <span id="date">--</span></div></div>
+<div class="signal-box wait" id="signalBox"><div style="font-size:12px;color:#fde68a;font-weight:700;margin-bottom:8px">الإشارة الحالية</div><div class="signal-text" id="signalText">⏳ جاري التحميل...</div><div style="font-size:14px;font-weight:600" id="signalStrength">--</div><div style="margin-top:10px;padding:8px;background:rgba(0,0,0,0.3);border-radius:8px;font-size:12px" id="advice">جاري الاتصال...</div></div>
+<div class="ind-grid"><div class="ind-card">RSI: <span id="rsi" style="color:#eab308;font-weight:800">--</span></div><div class="ind-card">MACD: <span id="macd" style="color:#22c55e;font-weight:800">--</span></div><div class="ind-card">EMA: <span id="ema" style="color:#22c55e;font-weight:800">--</span></div><div class="ind-card">Stoch: <span id="stoch" style="color:#ef4444;font-weight:800">--</span></div></div>
+<div class="btn-grid"><button class="btn btn-buy" onclick="trade('BUY')">📈 شراء</button><button class="btn btn-sell" onclick="trade('SELL')">📉 بيع</button></div>
+<button class="refresh-btn" onclick="loadData()">🔄 تحديث</button>
+<div class="footer">⚠️ للتحليل فقط • Twelve Data API</div>
+</div>
+<script>
+const API_KEY='a16e72269b854e348b1adc5a3e8c3387';
+async function loadData(){
+document.getElementById('signalText').textContent='⏳ جاري التحميل...';
+try{
+const p=await fetch('https://api.twelvedata.com/exchange_rate?symbol=EUR/USD&apikey='+API_KEY);
+const pd=await p.json();const price=parseFloat(pd.rate);
+const r=await fetch('https://api.twelvedata.com/rsi?symbol=EUR/USD&interval=1day&time_period=14&series_type=close&apikey='+API_KEY);
+const rd=await r.json();const rsi=parseFloat(rd.values[0].rsi);
+const m=await fetch('https://api.twelvedata.com/macd?symbol=EUR/USD&interval=1day&fast_period=12&slow_period=26&signal_period=9&series_type=close&apikey='+API_KEY);
+const md=await m.json();const macd=parseFloat(md.values[0].macd);
+const e=await fetch('https://api.twelvedata.com/ema?symbol=EUR/USD&interval=1day&time_period=20&series_type=close&apikey='+API_KEY);
+const ed=await e.json();const ema=parseFloat(ed.values[0].ema);
+const s=await fetch('https://api.twelvedata.com/stoch?symbol=EUR/USD&interval=1day&fast_k_period=14&slow_k_period=3&slow_d_period=3&apikey='+API_KEY);
+const sd=await s.json();const stoch=parseFloat(sd.values[0].slow_k);
+document.getElementById('price').textContent=price.toFixed(5);
+document.getElementById('date').textContent=new Date().toLocaleDateString('ar-SA');
+document.getElementById('rsi').textContent=rsi.toFixed(1);
+document.getElementById('macd').textContent=macd.toFixed(4);
+document.getElementById('ema').textContent=price>ema?'صاعد':'هابط';
+document.getElementById('stoch').textContent=stoch.toFixed(1);
+let sig='WAIT',str=50,adv='انتظر';
+if(rsi<35&&macd>0){sig='BUY';str=80;adv='افتح صفقة شراء (CALL)'}
+else if(rsi>65&&macd<0){sig='SELL';str=80;adv='افتح صفقة بيع (PUT)'}
+else if(rsi<45){sig='BUY';str=60;adv='ضعيف - انتظر تأكيد'}
+else if(rsi>55){sig='SELL';str=60;adv='ضعيف - انتظر تأكيد'}
+const box=document.getElementById('signalBox');
+box.className='signal-box '+sig.toLowerCase();
+document.getElementById('signalText').textContent=sig==='BUY'?'🟢 شراء':sig==='SELL'?'🔴 بيع':'🟡 انتظر';
+document.getElementById('signalStrength').textContent='قوة: '+str+'%';
+document.getElementById('advice').textContent=adv;
+}catch(err){document.getElementById('signalText').textContent='❌ خطأ';document.getElementById('advice').textContent='تأكد من الإنترنت';}}
+function trade(type){alert('تم تسجيل '+(type==='BUY'?'شراء':'بيع')+'! افتح الصفقة في Expert Option');}
+loadData();
+</script>
+</body>
+</html>
