@@ -592,10 +592,14 @@ let candles = [], currentTF = '1', timerInt = null, histArr = [];
 // ══════════════════════════════
 async function fetchCandles(tf) {
   const map = {'1':'1min','5':'5min'};
-  const url = `https://api.twelvedata.com/time_series?symbol=EUR/USD&interval=${map[tf]}&outputsize=120&apikey=${API_KEY}`;
+  const size = tf==='5'?60:120;
+  const url = `https://api.twelvedata.com/time_series?symbol=EUR/USD&interval=${map[tf]}&outputsize=${size}&apikey=${API_KEY}`;
   for(const p of PROXIES) {
     try {
-      const r = await fetch(p(url));
+      const ctrl = new AbortController();
+      const timeout = setTimeout(()=>ctrl.abort(), 8000);
+      const r = await fetch(p(url), {signal:ctrl.signal});
+      clearTimeout(timeout);
       if(!r.ok) continue;
       const d = await r.json();
       if(d?.values?.length) return d;
