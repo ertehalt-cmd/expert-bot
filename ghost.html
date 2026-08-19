@@ -580,9 +580,10 @@ footer b{color:var(--fog)}
 // ══════════════════════════════
 const API_KEY = 'a16e72269b854e348b1adc5a3e8c3387';
 const PROXIES = [
-  u => 'https://corsproxy.io/?' + encodeURIComponent(u),
+  u => 'https://corsfix.com/' + u,
   u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
-  u => 'https://corsproxy.org/?' + encodeURIComponent(u)
+  u => 'https://api.codetabs.com/v1/proxy?quest=' + u,
+  u => 'https://cors.x2u.in/' + u
 ];
 
 let candles = [], currentTF = '1', timerInt = null, histArr = [];
